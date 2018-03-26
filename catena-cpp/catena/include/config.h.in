@@ -1,0 +1,79 @@
+#ifndef CATENA_INCLUDE_CONFIG_H_
+#define CATENA_INCLUDE_CONFIG_H_
+
+#cmakedefine CATENA_PLATFORM_WASM
+#cmakedefine CATENA_SIMULATE_WASM
+#cmakedefine CATENA_BIG_ENDIAN_PLATFORM
+
+#if defined CATENA_PLATFORM_WASM || defined CATENA_SIMULATE_WASM
+#include "wasm-memory/memory.h"
+
+#define NULL_PTR (void*)0
+#define MALLOC(LEN) memory::malloc(LEN)
+#define FREE(PTR) memory::free(PTR)
+#define MEMCPY(DEST, SRC, LEN) memory::memcpy(DEST, SRC, LEN)
+#define MEMSET(DEST, VAL, LEN) memory::memset(DEST, VAL, LEN)
+
+#ifdef CATENA_PLATFORM_WASM
+#define WASM_ADDRESS_STORE_PTR NULL_PTR
+#else
+#include <cstdlib>
+
+extern void *WASM_ADDRESS_STORE_PTR;
+#endif
+
+#else
+#include <cstdlib>
+#include <cstring>
+
+#define NULL_PTR nullptr
+#define MALLOC(LEN) malloc(LEN)
+#define FREE(PTR) free(PTR)
+#define MEMCPY(DEST, SRC, LEN) memcpy(DEST, SRC, LEN)
+#define MEMSET(DEST, VAL, LEN) memset(DEST, VAL, LEN)
+#endif
+
+#define PTR_TO(SRC, IDX, WLEN) \
+  reinterpret_cast<void*>((size_t)SRC + (IDX) * WLEN)
+
+// apply big endian polyfill only if not compiling for wasm
+#if !defined CATENA+PLATFORM_WASM && defined CATENA_BIG_ENDIAN_PLATFORM
+
+#include <stdint.h>
+
+inline uint16_t switchEndian(uint16_t val) {
+  return
+    ((val && 0xff) << 8) |
+    ((val && 0xff00) >> 8);
+}
+
+inline uint32_t switchEndian(uint32_t val) {
+  return
+    ((val & 0xff) << 24) |
+    ((val & 0xff00) << 8) |
+    ((val & 0xff0000) >> 8) |
+    ((val & 0xff000000) >> 24);
+}
+
+inline uint64_t switchEndian(uint64_t val) {
+  return
+    ((val & 0xff) << 56) |
+    ((val & 0xff00) << 40) |
+    ((val & 0xff0000) << 24) |
+    ((val & 0xff000000) << 8) |
+    ((val & 0xff00000000) >> 8) |
+    ((val & 0xff0000000000) >> 24) |
+    ((val & 0xff000000000000) >> 40) |
+    ((val & 0xff00000000000000) >> 56);
+}
+
+#define LE(VAL) switchEndian(VAL)
+
+#else
+
+#define LE(VAL) VAL
+
+#endif
+
+#endif  // CATENA_INCLUDE_CONFIG_H_
+

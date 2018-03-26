@@ -1,0 +1,3 @@
+[submodule "catena-cpp/test-vectors"]
+	path = catena-cpp/test-vectors
+	url = git@github.com:medsec/catena-test-vectors.git
