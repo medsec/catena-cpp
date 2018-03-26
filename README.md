@@ -31,6 +31,10 @@ https://github.com/medsec/catena-test-vectors.
 Some of these tests use Catena variants with reduced garlic for a shorter
 running time.  This doesn't reduce the code coverage.  The non-reduced tests can
 be enabled with the `CATENA_FULL_TESTS` option.
+The test vectors are included as a submodule.  To clone this repository with all
+its submodules run
+
+    $ git clone --recursive git@github.com:medsec/catena-cpp.git
 
 #### Sanitizers
 The Catena library can be built for clang's [address sanitizer][1] and
