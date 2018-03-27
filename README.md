@@ -30,7 +30,7 @@ option.  The tests use the Catena test vectors found at
 https://github.com/medsec/catena-test-vectors.
 Some of these tests use Catena variants with reduced garlic for a shorter
 running time.  This doesn't reduce the code coverage.  The non-reduced tests can
-be enabled with the `CATENA_FULL_TESTS` option.
+be enabled with the `CATENA_ALL_TESTS` option.
 The test vectors are included as a submodule.  To clone this repository with all
 its submodules run
 
