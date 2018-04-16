@@ -98,7 +98,6 @@ void HexToDez(std::string const& hexstr, uint8_t* const& out) {
 }
 
 
-
 /******************************************************************************
   TEST NORMAL HASHING
  ******************************************************************************/
@@ -441,7 +440,6 @@ TEST(CatenaMartyMcfly, Hash) {
  ******************************************************************************/
 
 
-
 TEST(CatenaButterflyKeyed, Hash) {
   Json::Value tests = GetJsonObjFromFile(
       "../test-vectors/testvectors/keyedHashButterfly.json");
@@ -583,7 +581,6 @@ TEST(CatenaButterflyFullKeyed, Hash) {
 }
 
 
-
 TEST(CatenaDragonflyKeyed, Hash) {
   Json::Value tests = GetJsonObjFromFile(
       "../test-vectors/testvectors/keyedHashDragonfly.json");
@@ -654,8 +651,6 @@ TEST(CatenaDragonflyKeyed, Hash) {
 }
 
 
-
-
 TEST(CatenaDragonflyFullKeyed, Hash) {
   Json::Value tests = GetJsonObjFromFile(
       "../test-vectors/testvectors/keyedHashDragonflyFull.json");
@@ -707,6 +702,146 @@ TEST(CatenaDragonflyFullKeyed, Hash) {
         salt, salt_len,
         a_data, a_data_len,
         22, 22,
+        gamma, gamma_len,
+        key, keyLen,
+        user_id, userIdLen,
+        out, output_len);
+
+    ASSERT_EQ(Hex(res, 64), Hex(reinterpret_cast<uint8_t *>(out), 64));
+    FREE(pwd);
+    FREE(salt);
+    FREE(gamma);
+    FREE(a_data);
+    FREE(key);
+    FREE(user_id);
+    FREE(res);
+  }
+  delete catena;
+  FREE(out);
+}
+
+
+TEST(CatenaMartyMcFlyKeyed, Hash) {
+  Json::Value tests = GetJsonObjFromFile(
+      "../test-vectors/testvectors/keyedHashMartyMcFly.json");
+  catena::Catena *catena = catena::Catena::MartyMcFly();
+
+  uint8_t *out = reinterpret_cast<uint8_t*>(MALLOC(64));
+
+  for (auto test : tests) {
+    Json::Value inputs = test["inputs"];
+    std::string tmp = inputs["pwd"].asString();
+    size_t pwd_len = (inputs["pwd"].asString().length() + 1) / 2;
+    uint8_t* pwd = reinterpret_cast<uint8_t*>(MALLOC(pwd_len));
+    char* tmp2 = &tmp[0u];
+    HexToDez(tmp2, pwd);
+
+    tmp = inputs["salt"].asString();
+    size_t salt_len = (tmp.length() + 1) / 2;
+    uint8_t* salt = reinterpret_cast<uint8_t*>(MALLOC(salt_len));
+    HexToDez(&tmp[0u], salt);
+
+    tmp = inputs["gamma"].asString();
+    size_t gamma_len = (tmp.length() + 1) / 2;
+    uint8_t* gamma = reinterpret_cast<uint8_t*>(MALLOC(gamma_len));
+    HexToDez(&tmp[0u], gamma);
+
+    tmp = inputs["aData"].asString();
+    size_t a_data_len = (tmp.length() + 1) / 2;
+    uint8_t* a_data = reinterpret_cast<uint8_t*>(MALLOC(a_data_len));
+    HexToDez(&tmp[0u], a_data);
+
+    tmp = inputs["key"].asString();
+    size_t keyLen = (tmp.length() + 1) / 2;
+    uint8_t* key = reinterpret_cast<uint8_t*>(MALLOC(keyLen));
+    HexToDez(&tmp[0u], key);
+
+    tmp = inputs["userID"].asString();
+    size_t userIdLen = (tmp.length() + 1) / 2;
+    uint8_t* user_id = reinterpret_cast<uint8_t*>(MALLOC(userIdLen));
+    HexToDez(&tmp[0u], user_id);
+
+    uint16_t output_len = inputs["outputLength"].asUInt();
+
+    tmp = test["outputs"]["res"].asString();
+    size_t res_len = (tmp.length() + 1) / 2;
+    uint8_t* res = reinterpret_cast<uint8_t*>(MALLOC(res_len));
+    HexToDez(&tmp[0u], res);
+
+    catena->KeyedHash(pwd, pwd_len,
+        salt, salt_len,
+        a_data, a_data_len,
+        17, 17,
+        gamma, gamma_len,
+        key, keyLen,
+        user_id, userIdLen,
+        out, output_len);
+
+    ASSERT_EQ(Hex(res, 64), Hex(reinterpret_cast<uint8_t *>(out), 64));
+    FREE(pwd);
+    FREE(salt);
+    FREE(gamma);
+    FREE(a_data);
+    FREE(key);
+    FREE(user_id);
+    FREE(res);
+  }
+  delete catena;
+  FREE(out);
+}
+
+
+TEST(CatenaMartyMcFlyFullKeyed, Hash) {
+  Json::Value tests = GetJsonObjFromFile(
+      "../test-vectors/testvectors/keyedHashMartyMcFlyFull.json");
+  catena::Catena *catena = catena::Catena::MartyMcFlyFull();
+
+  uint8_t *out = reinterpret_cast<uint8_t*>(MALLOC(64));
+
+  for (auto test : tests) {
+    Json::Value inputs = test["inputs"];
+    std::string tmp = inputs["pwd"].asString();
+    size_t pwd_len = (inputs["pwd"].asString().length() + 1) / 2;
+    uint8_t* pwd = reinterpret_cast<uint8_t*>(MALLOC(pwd_len));
+    char* tmp2 = &tmp[0u];
+    HexToDez(tmp2, pwd);
+
+    tmp = inputs["salt"].asString();
+    size_t salt_len = (tmp.length() + 1) / 2;
+    uint8_t* salt = reinterpret_cast<uint8_t*>(MALLOC(salt_len));
+    HexToDez(&tmp[0u], salt);
+
+    tmp = inputs["gamma"].asString();
+    size_t gamma_len = (tmp.length() + 1) / 2;
+    uint8_t* gamma = reinterpret_cast<uint8_t*>(MALLOC(gamma_len));
+    HexToDez(&tmp[0u], gamma);
+
+    tmp = inputs["aData"].asString();
+    size_t a_data_len = (tmp.length() + 1) / 2;
+    uint8_t* a_data = reinterpret_cast<uint8_t*>(MALLOC(a_data_len));
+    HexToDez(&tmp[0u], a_data);
+
+    tmp = inputs["key"].asString();
+    size_t keyLen = (tmp.length() + 1) / 2;
+    uint8_t* key = reinterpret_cast<uint8_t*>(MALLOC(keyLen));
+    HexToDez(&tmp[0u], key);
+
+    tmp = inputs["userID"].asString();
+    size_t userIdLen = (tmp.length() + 1) / 2;
+    uint8_t* user_id = reinterpret_cast<uint8_t*>(MALLOC(userIdLen));
+    HexToDez(&tmp[0u], user_id);
+
+    uint16_t output_len = inputs["outputLength"].asUInt();
+
+    tmp = test["outputs"]["res"].asString();
+    size_t res_len = (tmp.length() + 1) / 2;
+    uint8_t* res = reinterpret_cast<uint8_t*>(MALLOC(res_len));
+    HexToDez(&tmp[0u], res);
+
+    catena->KeyedHash(pwd, pwd_len,
+        salt, salt_len,
+        a_data, a_data_len,
+        23, 23,
         gamma, gamma_len,
         key, keyLen,
         user_id, userIdLen,
@@ -988,7 +1123,6 @@ TEST(CatenaDragonflyFullReducedServerReliefClient, Hash) {
  ******************************************************************************/
 
 
-
 TEST(CatenaButterflyReducedServerReliefServer, Hash) {
   Json::Value tests = GetJsonObjFromFile(
       "../test-vectors/testvectors/serverReliefServerButterflyReduced.json");
@@ -1025,7 +1159,6 @@ TEST(CatenaButterflyReducedServerReliefServer, Hash) {
 
   FREE(out);
 }
-
 
 
 TEST(CatenaButterflyFullReducedServerReliefServer, Hash) {
@@ -1065,7 +1198,6 @@ TEST(CatenaButterflyFullReducedServerReliefServer, Hash) {
 }
 
 
-
 TEST(CatenaDragonflyReducedServerReliefServer, Hash) {
   Json::Value tests = GetJsonObjFromFile(
       "../test-vectors/testvectors/serverReliefServerDragonflyReduced.json");
@@ -1101,7 +1233,6 @@ TEST(CatenaDragonflyReducedServerReliefServer, Hash) {
 
   FREE(out);
 }
-
 
 
 TEST(CatenaDragonflyFullReducedServerReliefServer, Hash) {
@@ -1145,7 +1276,6 @@ TEST(CatenaDragonflyFullReducedServerReliefServer, Hash) {
 /******************************************************************************
   TEST CLIENT INDEPENDENT UPDATE
  ******************************************************************************/
-
 
 
 TEST(CatenaDragonflycCIUpdateReduced, Hash) {
@@ -1197,7 +1327,6 @@ TEST(CatenaDragonflycCIUpdateReduced, Hash) {
 /******************************************************************************
   TEST PROOF OF WORK SERVER SIDE
  ******************************************************************************/
-
 
 
 TEST(CatenaButterflyReducedProofOfWorkServerPwd, Hash) {
@@ -1272,8 +1401,6 @@ TEST(CatenaButterflyReducedProofOfWorkServerPwd, Hash) {
 
   delete catena;
 }
-
-
 
 
 TEST(CatenaButterflyReducedProofOfWorkServerPepper, Hash) {
@@ -1360,10 +1487,167 @@ TEST(CatenaButterflyReducedProofOfWorkServerPepper, Hash) {
 }
 
 
+TEST(CatenaMartyMcFlyReducedProofOfWorkServerPwd, Hash) {
+  Json::Value tests = GetJsonObjFromFile(
+      "../test-vectors/testvectors/proofOfWorkServerPwdMartyMcFlyReduced.json");
+  catena::Catena *catena = catena::Catena::MartyMcFly();
+
+  for (auto test : tests) {
+    Json::Value inputs = test["inputs"];
+    std::string tmp = inputs["pwd"].asString();
+    size_t pwd_len = (inputs["pwd"].asString().length() + 1) / 2;
+    uint8_t* pwd = reinterpret_cast<uint8_t*>(MALLOC(pwd_len));
+    char* tmp2 = &tmp[0u];
+    HexToDez(tmp2, pwd);
+
+    tmp = inputs["salt"].asString();
+    size_t salt_len = (tmp.length() + 1) / 2;
+    uint8_t* salt = reinterpret_cast<uint8_t*>(MALLOC(salt_len));
+    HexToDez(&tmp[0u], salt);
+
+    tmp = inputs["gamma"].asString();
+    size_t gamma_len = (tmp.length() + 1) / 2;
+    uint8_t* gamma = reinterpret_cast<uint8_t*>(MALLOC(gamma_len));
+    HexToDez(&tmp[0u], gamma);
+
+    tmp = inputs["aData"].asString();
+    size_t a_data_len = (tmp.length() + 1) / 2;
+    uint8_t* a_data = reinterpret_cast<uint8_t*>(MALLOC(a_data_len));
+    HexToDez(&tmp[0u], a_data);
+
+    uint16_t p = inputs["p"].asUInt();
+
+    tmp = test["outputs"]["pwd"].asString();
+    size_t out_pwd_len = (tmp.length() + 1) / 2;
+    uint8_t* outpwd = reinterpret_cast<uint8_t*>(MALLOC(out_pwd_len));
+    HexToDez(&tmp[0u], outpwd);
+
+    tmp = test["outputs"]["outHash"].asString();
+    size_t out_hash_len = (tmp.length() + 1) / 2;
+    uint8_t* out_hash = reinterpret_cast<uint8_t*>(MALLOC(out_hash_len));
+    HexToDez(&tmp[0u], out_hash);
+
+    uint8_t g_low = 9;
+    uint8_t g_high = 9;
+
+    uint8_t* out_pwd = reinterpret_cast<uint8_t*>(MALLOC(out_pwd_len));
+    size_t out_salt_len = salt_len;
+    uint8_t* out_salt = reinterpret_cast<uint8_t*>(MALLOC(out_salt_len));
+    uint16_t out_proof_len = out_hash_len;
+    uint8_t* out_proof = reinterpret_cast<uint8_t*>(MALLOC(out_proof_len));
+
+    catena->ProofOfWorkServer(pwd, pwd_len, salt, salt_len, a_data, a_data_len,
+                              g_low, g_high, gamma, gamma_len, p, 1, out_pwd,
+                              out_pwd_len, out_salt, out_salt_len,
+                              out_proof, out_proof_len);
+
+    ASSERT_EQ(Hex(outpwd, out_pwd_len), Hex(reinterpret_cast<uint8_t *>(
+            (size_t)out_pwd), out_pwd_len));
+
+    ASSERT_EQ(Hex(out_hash, out_hash_len), Hex(reinterpret_cast<uint8_t *>(
+            (size_t)out_proof), out_proof_len));
+    FREE(pwd);
+    FREE(salt);
+    FREE(gamma);
+    FREE(a_data);
+    FREE(outpwd);
+    FREE(out_hash);
+    FREE(out_pwd);
+    FREE(out_salt);
+    FREE(out_proof);
+  }
+
+  delete catena;
+}
+
+
+TEST(CatenaMartyMcFlyReducedProofOfWorkServerPepper, Hash) {
+  Json::Value tests = GetJsonObjFromFile(
+      "../test-vectors/testvectors/proofOfWorkServerSaltMartyMcFlyReduced.json");
+  catena::Catena *catena = catena::Catena::MartyMcFly();
+
+  for (auto test : tests) {
+    Json::Value inputs = test["inputs"];
+    std::string tmp = inputs["pwd"].asString();
+    size_t pwd_len = (inputs["pwd"].asString().length() + 1) / 2;
+    uint8_t* pwd = reinterpret_cast<uint8_t*>(MALLOC(pwd_len));
+    char* tmp2 = &tmp[0u];
+    HexToDez(tmp2, pwd);
+
+    tmp = inputs["salt"].asString();
+    size_t salt_len = (tmp.length() + 1) / 2;
+    uint8_t* salt = reinterpret_cast<uint8_t*>(MALLOC(salt_len));
+    HexToDez(&tmp[0u], salt);
+
+    tmp = inputs["gamma"].asString();
+    size_t gamma_len = (tmp.length() + 1) / 2;
+    uint8_t* gamma = reinterpret_cast<uint8_t*>(MALLOC(gamma_len));
+    HexToDez(&tmp[0u], gamma);
+
+    tmp = inputs["aData"].asString();
+    size_t a_data_len = (tmp.length() + 1) / 2;
+    uint8_t* a_data = reinterpret_cast<uint8_t*>(MALLOC(a_data_len));
+    HexToDez(&tmp[0u], a_data);
+
+    uint16_t p = inputs["p"].asUInt();
+
+
+    tmp = test["outputs"]["pwd"].asString();
+    size_t out_pwd_len = (tmp.length() + 1) / 2;
+    uint8_t* outpwd = reinterpret_cast<uint8_t*>(MALLOC(out_pwd_len));
+    HexToDez(&tmp[0u], outpwd);
+
+
+    tmp = test["outputs"]["salt"].asString();
+    size_t out_salt_len = (tmp.length() + 1) / 2;
+    uint8_t* out_salt = reinterpret_cast<uint8_t*>(MALLOC(out_salt_len));
+    HexToDez(&tmp[0u], out_salt);
+
+    tmp = test["outputs"]["outHash"].asString();
+    size_t out_hash_len = (tmp.length() + 1) / 2;
+    uint8_t* out_hash = reinterpret_cast<uint8_t*>(MALLOC(out_hash_len));
+    HexToDez(&tmp[0u], out_hash);
+
+    uint8_t g_low = 9;
+    uint8_t g_high = 9;
+
+    uint8_t* out_pwd = reinterpret_cast<uint8_t*>(MALLOC(out_pwd_len));
+    out_salt_len = salt_len;
+    uint16_t out_proof_len = out_hash_len;
+    uint8_t* out_proof = reinterpret_cast<uint8_t*>(MALLOC(out_proof_len));
+
+    catena->ProofOfWorkServer(pwd, pwd_len, salt, salt_len, a_data, a_data_len,
+                              g_low, g_high, gamma, gamma_len, p, 0, out_pwd,
+                              out_pwd_len, out_salt, out_salt_len,
+                              out_proof, out_proof_len);
+
+
+    ASSERT_EQ(Hex(outpwd, out_pwd_len), Hex(reinterpret_cast<uint8_t *>(
+            (size_t)out_pwd), out_pwd_len));
+
+    ASSERT_EQ(Hex(out_salt, out_salt_len), Hex(reinterpret_cast<uint8_t *>(
+            (size_t)out_salt), out_salt_len));
+
+    ASSERT_EQ(Hex(out_hash, out_hash_len), Hex(reinterpret_cast<uint8_t *>(
+            (size_t)out_proof), out_proof_len));
+    FREE(pwd);
+    FREE(salt);
+    FREE(gamma);
+    FREE(a_data);
+    FREE(outpwd);
+    FREE(out_hash);
+    FREE(out_pwd);
+    FREE(out_salt);
+    FREE(out_proof);
+  }
+
+  delete catena;
+}
+
+
 /******************************************************************************
   TEST PROOF OF WORK CLIENTSIDE
  ******************************************************************************/
-
 
 
 TEST(CatenaButterflyReducedProofOfWorkClientPwd, Hash) {
@@ -1522,7 +1806,6 @@ TEST(CatenaButterflyReducedProofOfWorkClientSalt, Hash) {
  ******************************************************************************/
 
 
-
 TEST(CatenaDragonflyCIUpdate, Hash) {
   Json::Value tests = GetJsonObjFromFile(
       "../test-vectors/testvectors/ciUpdateDragonfly.json");
@@ -1613,7 +1896,6 @@ TEST(CatenaDragonflyFullCIUpdate, Hash) {
   delete catena;
   FREE(out);
 }
-
 
 
 TEST(CatenaButterflyCIUpdate, Hash) {
