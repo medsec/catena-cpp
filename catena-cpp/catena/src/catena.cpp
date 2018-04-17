@@ -831,7 +831,6 @@ namespace catena {
         out_len < 1) {
       throw std::runtime_error("Invalid inputs");
     }
-
     size_t tweak_len = CalcTweakLen();
     size_t buffer_len = k_ + 1;
     size_t trunc_len = n_ - out_len;
@@ -852,7 +851,30 @@ namespace catena {
         tweak);
 
     // initialize random seed with tweak
-    srand((size_t) tweak);
+    uint64_t *seed = new uint64_t[16];
+    uint64_t *mem_seed = new uint64_t[16];
+    uint8_t num_hashes_in_seed = (128 / n_);
+    uint8_t *tmp = reinterpret_cast<uint8_t*>(MALLOC(num_hashes_in_seed * n_));
+    h_prime_->Reset();
+    h_->Update(tweak, tweak_len);
+
+    for (size_t i = 0; i < num_hashes_in_seed; ++i) {
+      uint8_t* tmp_x = reinterpret_cast<uint8_t*>((size_t)tmp + (i * n_));
+      h_->Final(tmp_x);
+      h_->Update(tmp, (i + 1) * n_);
+    }
+
+    for (size_t i = 0; i < 16; ++i) {
+      uint64_t tmp_seed = 0;
+      for (size_t j = 0; j < 8; ++j) {
+        tmp_seed += (uint64_t) tmp[i * 8 + j] << (8 * (7 - j));
+      }
+      seed[i] = tmp_seed;
+    }
+    MEMCPY(mem_seed, seed, 128);
+    xss_->Seed(seed);
+    // clean buffer of h
+    h_->Final(tmp);
 
     h_->Update(tweak, tweak_len);
     h_->Update(pwd, pwd_len);
@@ -862,14 +884,12 @@ namespace catena {
     // clear pwd from memory
     MEMSET(pwd, 0, pwd_len);
 
-    FREE(tweak);
-
     Flap((g_low + 1) >> 1, x, gamma, gamma_len, x);
 
     h_->Hash(x, k_, x);
-
-    // full iterations
     for (uint8_t g = g_low; g < g_high; ++g) {
+      MEMCPY(seed, mem_seed, 128);
+      xss_->Seed(seed);
       Flap(g, x, gamma, gamma_len, x);
       buffer[0] = g;
 
@@ -877,11 +897,15 @@ namespace catena {
       // truncate to out_len
       MEMSET(x_out_len, 0, trunc_len);
     }
-
-    // last iteration skips hashing x
+    MEMCPY(seed, mem_seed, 128);
+    xss_->Seed(seed);
     Flap(g_high, x, gamma, gamma_len, x);
     MEMCPY(out, x, buffer_len - 1);
 
+    delete[] seed;
+    delete[] mem_seed;
     FREE(buffer);
+    FREE(tweak);
+    FREE(tmp);
   }
 }  // namespace catena
